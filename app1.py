@@ -9,10 +9,11 @@ password = None
 
 
 class MainPageWidget(QWidget):
-    def __init__(self, switch_to_sign_in, switch_to_register):
+    def __init__(self, switch_to_sign_in, switch_to_register, switch_to_delete):
         super().__init__()
         self.switch_to_sign_in = switch_to_sign_in
         self.switch_to_register = switch_to_register
+        self.switch_to_delete = switch_to_delete
         self.init_ui()
 
     def init_ui(self):
@@ -26,14 +27,17 @@ class MainPageWidget(QWidget):
         # Buttons for Sign In and Register
         sign_in_button = QPushButton("Sign In", self)
         register_button = QPushButton("Register", self)
+        remove_button = QPushButton("Delete Account", self)
 
         # Connect buttons to corresponding methods
         sign_in_button.clicked.connect(self.switch_to_sign_in)
         register_button.clicked.connect(self.switch_to_register)
+        remove_button.clicked.connect(self.switch_to_delete)
 
         # Add buttons to the layout
         layout.addWidget(sign_in_button)
         layout.addWidget(register_button)
+        layout.addWidget(remove_button)
 
         self.setLayout(layout)
 
@@ -90,7 +94,7 @@ class SignInWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'User ID and password are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/login'
+        url = 'http://127.0.0.1/api/login'
         data = {'id': user_id, 'pwd': password}
 
         try:
@@ -155,7 +159,7 @@ class RegisterWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'Details are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/register'
+        url = 'http://13.201.75.30/api/register'
         data = {'id': user_id, 'pwd': password, 'email' : email, 'mobile' : mobile}
 
         try:
@@ -221,7 +225,7 @@ class ForgotPasswordWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'Details are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/send_code'
+        url = 'http://13.201.75.30/api/send_code'
         data = {'id': user_id}
 
         try:
@@ -242,7 +246,7 @@ class ForgotPasswordWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'Details are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/pwd_reset'
+        url = 'http://13.201.75.30/api/pwd_reset'
         data = {'id': user_id,'new_pwd' : pwd, 'code' : code}
 
         try:
@@ -263,7 +267,7 @@ class BalanceWidget(QWidget):
         self.switch_to_signin = switch_to_signin
         self.user_id = user_id
         self.user_pwd = user_pwd
-        self.balances = requests.get("http://127.0.0.1:5000/api/get_data", json = {'id' : self.user_id, 'pwd' : self.user_pwd}).json()['data']
+        self.balances = requests.get("http://13.201.75.30/api/get_data", json = {'id' : self.user_id, 'pwd' : self.user_pwd}).json()['data']
         self.init_ui()
 
     def init_ui(self):
@@ -298,6 +302,10 @@ class BalanceWidget(QWidget):
         add_user_button = QPushButton("Add Person", self)
         add_user_button.clicked.connect(self.add_user)
         layout.addWidget(add_user_button)
+        
+        del_user_button = QPushButton("Delete Person", self)
+        del_user_button.clicked.connect(self.del_user)
+        layout.addWidget(del_user_button)
 
         self.setLayout(layout)
 
@@ -313,11 +321,16 @@ class BalanceWidget(QWidget):
         
 
     def update_balances(self):
-        self.balances = requests.get("http://127.0.0.1:5000/api/get_data", json = {'id' : self.user_id, 'pwd' : self.user_pwd}).json()['data']
+        self.balances = requests.get("http://13.201.75.30/api/get_data", json = {'id' : self.user_id, 'pwd' : self.user_pwd}).json()['data']
         self.populate_table()
         
     def add_user(self):
         dialog = ADD_user(self.user_id, self.user_pwd)
+        dialog.exec_()
+        self.update_balances()
+        
+    def del_user(self):
+        dialog = del_user(self.user_id, self.user_pwd)
         dialog.exec_()
         self.update_balances()
         
@@ -349,7 +362,35 @@ class ADD_user(QDialog):
         self.setLayout(layout)
         
     def add_user(self):
-        response = requests.put("http://127.0.0.1:5000/api/add_user", json = {'id' : self.user_id, 'pwd' : self.user_pwd, 'name' : self.name_input.text(), 'data' : self.amount_input.text()})
+        response = requests.put("http://13.201.75.30/api/add_user", json = {'id' : self.user_id, 'pwd' : self.user_pwd, 'name' : self.name_input.text(), 'data' : self.amount_input.text()})
+        self.accept()
+
+
+class del_user(QDialog):
+    def __init__(self, user_id, user_pwd):
+        self.user_id = user_id
+        self.user_pwd = user_pwd
+        super().__init__()
+        self.init_ui()
+        
+    def init_ui(self):
+        self.setWindowTitle(f"Remove Person")
+        self.resize(300, 150)
+
+        layout = QFormLayout()
+        
+        self.name_input = QLineEdit(self)
+        self.name_input.setPlaceholderText("Enter name")
+        layout.addRow("Name:", self.name_input)
+        
+        submit_button = QPushButton(f"Submit", self)
+        submit_button.clicked.connect(self.add_user)
+        layout.addWidget(submit_button)
+
+        self.setLayout(layout)
+        
+    def add_user(self):
+        response = requests.delete("http://13.201.75.30/api/rm_user", json = {'id' : self.user_id, 'pwd' : self.user_pwd, 'name' : self.name_input.text()})
         self.accept()
 
 
@@ -408,20 +449,69 @@ class TransactionDialog(QDialog):
             self.add_txn(self.user_id, name, int(amount_text), self.user_pwd)
             self.balances[name] += amount
 
-        QMessageBox.information(self, "Success", f"{self.transaction_type} successful!")
         self.update_callback()
         self.accept()
         
     def add_txn(self, user_id, name, amount, pwd):
-        url = 'http://127.0.0.1:5000/api/add_txn'
+        url = 'http://13.201.75.30/api/add_txn'
         data = {'id': user_id,'pwd' : pwd,'name' : name, 'data' : amount}
 
         try:
             response = requests.put(url, json=data)
+            if response.json()['status'] == 409:
+                QMessageBox.information(self, ':((', 'Wrong Password')
+            else:
+                QMessageBox.warning(self, 'Error', response.json().get('message'))
+        except requests.exceptions.RequestException as e:
+            QMessageBox.critical(self, 'Error', f'An error occurred: {e}')
+            
+class Delete_Account(QWidget):
+    def __init__(self, switch_to_main_page):
+        super().__init__()
+        self.switch_to_main_page = switch_to_main_page
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+
+        # Title
+        layout.addWidget(QLabel("Delete Page"))
+        
+        self.id_input = QLineEdit(self)
+        self.id_input.setPlaceholderText("Enter your ID")
+        layout.addWidget(self.id_input)
+        
+        self.pwd_input = QLineEdit(self)
+        self.pwd_input.setPlaceholderText("Enter your password")
+        layout.addWidget(self.pwd_input)
+        
+        register_button = QPushButton("Delete", self)
+        register_button.clicked.connect(self.delete)
+        layout.addWidget(register_button)
+
+        back_button = QPushButton("Back", self)
+        back_button.clicked.connect(self.switch_to_main_page)
+        layout.addWidget(back_button)
+
+        self.setLayout(layout)
+        
+    def delete(self):
+        user_id = self.id_input.text()
+        password = self.pwd_input.text()
+
+        if not user_id or not password:
+            QMessageBox.warning(self, 'Error', 'Details are required')
+            return
+
+        url = 'http://13.201.75.30/api/rm_acc'
+        data = {'id': user_id, 'pwd': password}
+
+        try:
+            response = requests.delete(url, json=data)
             if response.json()['status'] == 200:
-                QMessageBox.information(self, 'Success', 'Password Changed successfully')
+                QMessageBox.information(self, 'Success', 'Account Deleted successfully')
             elif response.json()['status'] == 409:
-                QMessageBox.information(self, ':((', 'Wrong Code')
+                QMessageBox.information(self, ':((', 'Wrong Password')
             else:
                 QMessageBox.warning(self, 'Error', response.json().get('message'))
         except requests.exceptions.RequestException as e:
@@ -439,17 +529,17 @@ class MainWindow(QMainWindow):
         self.user_pwd = None
 
         # Widgets for Main Page, Sign In, and Register
-        self.main_page_widget = MainPageWidget(self.show_sign_in, self.show_register)
+        self.main_page_widget = MainPageWidget(self.show_sign_in, self.show_register, self.show_del_acc_page)
         self.sign_in_widget = SignInWidget(self.show_main_page, self.show_forgot_pwd, self.show_ledger, self.get_id_pwd)
         self.register_widget = RegisterWidget(self.show_main_page)
         self.forgot_pwd_widget = ForgotPasswordWidget(self.show_sign_in)
+        self.delete_acc_widget = Delete_Account(self.show_main_page)
         
-
-        # Add widgets to stack
-        self.stack.addWidget(self.main_page_widget)  # Index 0
-        self.stack.addWidget(self.sign_in_widget)    # Index 1
-        self.stack.addWidget(self.register_widget)   # Index 2
+        self.stack.addWidget(self.main_page_widget)
+        self.stack.addWidget(self.sign_in_widget)  
+        self.stack.addWidget(self.register_widget)   
         self.stack.addWidget(self.forgot_pwd_widget)
+        self.stack.addWidget(self.delete_acc_widget)
         
 
         self.setCentralWidget(self.stack)
@@ -475,6 +565,9 @@ class MainWindow(QMainWindow):
     def get_id_pwd(self, id, pwd):
         self.user_id = id
         self.user_pwd = pwd
+        
+    def show_del_acc_page(self):
+        self.stack.setCurrentWidget(self.delete_acc_widget)
 
 
 if __name__ == "__main__":

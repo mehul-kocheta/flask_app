@@ -1,7 +1,6 @@
 import requests
-# import webbrowser
-BASE = "http://127.0.0.1:5000/"
+BASE = "http://13.201.75.30"
 
-response6 = requests.get(BASE + '/api/get_data', json = {'id' : 'mehul12', 'pwd' : 'xx'})
+response6 = requests.get(BASE + '/api/login', json = {'id' : 'mehul12', 'pwd' : 'xx'}, timeout=100)
 
 print(response6.json())

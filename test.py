@@ -3,9 +3,7 @@ from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base 
 from sqlalchemy import Table, Column, Integer, String, MetaData, inspect
-from flask_oauthlib.client import OAuth
 import requests
-from authlib.integrations.flask_client import OAuth
 from flask_mail import Mail, Message
 import random
 import sqlite3
@@ -66,8 +64,8 @@ def add_user(user_id, name, data):
     conn.commit()
     conn.close()
     
-
-db.create_all()
+with app.app_context():
+    db.create_all()
 
 class LoginResource(Resource):
     def get(self):
@@ -196,9 +194,49 @@ def get_data():
         return jsonify({'message' : "Successful", 'status' : 200, 'data' : result})
     else:
         return jsonify({'message' : "Unsuccessful, Incorrect Password", 'status' : 409})
-
-
     
+    
+@app.route('/api/rm_acc', methods = ['DELETE'])
+def remove_acc():
+    id = request.json.get('id')
+    pwd = request.json.get('pwd')
+    
+    acc = AccountModel.query.filter_by(user_id = id).first()
+    
+    if not acc:
+        return jsonify({'message' : "Id does not exist", 'status' : 404})
+    else:
+        if acc.user_pwd == pwd:
+            add_entry = """
+            DELETE 
+            FROM Account
+            WHERE user_id = '{}'
+            """.format(id)
+            conn = sqlite3.connect('database.db')
+            conn.execute(add_entry)
+            conn.commit()
+            
+            return jsonify({'message' : "Account Deleted Successful", 'status' : 200})
+        else:
+            return jsonify({'message' : "Wrong Password", 'status' : 409})
+        
+@app.route('/api/rm_user', methods = ['DELETE'])
+def remove_user():
+    id = request.json.get('id')
+    pwd = request.json.get('pwd')
+    name = request.json.get('name')
+    
+    add_entry = """
+    DELETE 
+    FROM {}
+    WHERE name = '{}'
+    """.format(id, name)
+    conn = sqlite3.connect('database.db')
+    conn.execute(add_entry)
+    conn.commit()
+    
+    return jsonify({'message' : "Person Removed", 'status' : 200})
+
 
            
 api.add_resource(LoginResource, '/api/login')
@@ -206,4 +244,4 @@ api.add_resource(RegisterResource, '/api/register')
 api.add_resource(PasswordChangeResource, '/api/pwd_reset')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host = '0.0.0.0')
