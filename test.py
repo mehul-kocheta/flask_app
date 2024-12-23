@@ -244,4 +244,4 @@ api.add_resource(RegisterResource, '/api/register')
 api.add_resource(PasswordChangeResource, '/api/pwd_reset')
 
 if __name__ == "__main__":
-    app.run(debug=True, host = '0.0.0.0')
+    app.run(debug=True)
