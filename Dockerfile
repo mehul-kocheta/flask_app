@@ -4,4 +4,4 @@ COPY . /flask_app
 RUN pip install -r requirements.txt
 EXPOSE 5000
 ENV NAME World
-CMD ["python", "test.py"]
+CMD ["python", "server.py"]

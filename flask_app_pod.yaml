@@ -20,4 +20,4 @@ spec:
       limits:
         memory: "512Mi"
         cpu: "1"
-    command: ["python", "test.py"]
+    command: ["python", "server.py"]
