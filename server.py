@@ -7,22 +7,22 @@ from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, 
 import requests
 from flask_mail import Mail, Message
 import random
-import sqlite3
+import os
 
 app = Flask(__name__)
 api = Api(app)
 app.secret_key = 'mehul'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:root@localhost/test'
+app.config['SQLALCHEMY_DATABASE_URI'] = str(os.environ['DATABASE_URI'])
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'testflaskapplication@gmail.com'  # Use your actual Gmail address
-app.config['MAIL_PASSWORD'] =  "kgop xpog hcvd ihhr"    # Use your generated App Password
+app.config['MAIL_USERNAME'] = 'testflaskapplication@gmail.com'
+app.config['MAIL_PASSWORD'] =  "kgop xpog hcvd ihhr" 
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 db = SQLAlchemy(app)
-engine = create_engine('mysql+mysqlconnector://root:root@localhost/test')
+engine = create_engine(str(os.environ['DATABASE_URI']))
 Session = sessionmaker(bind=engine) 
-session = Session() 
+session = Session()
 Base = declarative_base()
 
 mail = Mail(app)
@@ -49,13 +49,11 @@ def create_table(table_name, DynamicBase):
     return DynamicTable
 
 def create_user_ledger_table(user_id): 
-    engine = create_engine('mysql+mysqlconnector://root:root@localhost/test')
     metadata = MetaData() # Define the table schema 
     user_ledger_table = Table(user_id, metadata, 
                               Column('name', String(255), nullable=False, primary_key=True), 
                               Column('balance', Integer, nullable=False)) 
     metadata.create_all(engine)
-    print("test")
 
 def add_user(user_id, name, data):
     DynamicBase = declarative_base(class_registry=dict())
@@ -82,7 +80,7 @@ def add_transaction(user_id, name, data):
     result = session.query(dynamic_table).filter_by(name=name).first() 
     if result: 
         result.balance += int(data) 
-        session.commit() 
+        session.commit()
         session.close() 
         return True 
     else: 
@@ -276,13 +274,10 @@ def remove_user():
     else:
         session.close()
         return jsonify({'message': "Person Not Found", 'status': 404})
-
-
-
            
 api.add_resource(LoginResource, '/api/login')
 api.add_resource(RegisterResource, '/api/register')
 api.add_resource(PasswordChangeResource, '/api/pwd_reset')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host = '0.0.0.0', port = 5000)

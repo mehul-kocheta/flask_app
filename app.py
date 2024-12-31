@@ -96,7 +96,7 @@ class SignInWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'User ID and password are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/login'
+        url = 'http://127.0.0.1:30000/api/login'
         data = {'id': user_id, 'pwd': password}
 
         try:
@@ -161,7 +161,7 @@ class RegisterWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'Details are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/register'
+        url = 'http://127.0.0.1:30000/api/register'
         data = {'id': user_id, 'pwd': password, 'email' : email, 'mobile' : mobile}
 
         try:
@@ -227,7 +227,7 @@ class ForgotPasswordWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'Details are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/send_code'
+        url = 'http://127.0.0.1:30000/api/send_code'
         data = {'id': user_id}
 
         try:
@@ -248,7 +248,7 @@ class ForgotPasswordWidget(QWidget):
             QMessageBox.warning(self, 'Error', 'Details are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/pwd_reset'
+        url = 'http://127.0.0.1:30000/api/pwd_reset'
         data = {'id': user_id,'new_pwd' : pwd, 'code' : code}
 
         try:
@@ -269,7 +269,7 @@ class BalanceWidget(QWidget):
         self.switch_to_signin = switch_to_signin
         self.user_id = user_id
         self.user_pwd = user_pwd
-        self.balances = requests.get("http://127.0.0.1:5000/api/get_data", json = {'id' : self.user_id, 'pwd' : self.user_pwd}).json()['data']
+        self.balances = requests.get("http://127.0.0.1:30000/api/get_data", json = {'id' : self.user_id, 'pwd' : self.user_pwd}).json()['data']
         self.init_ui()
 
     def init_ui(self):
@@ -323,7 +323,7 @@ class BalanceWidget(QWidget):
         
 
     def update_balances(self):
-        self.balances = requests.get("http://127.0.0.1:5000/api/get_data", json = {'id' : self.user_id, 'pwd' : self.user_pwd}).json()['data']
+        self.balances = requests.get("http://127.0.0.1:30000/api/get_data", json = {'id' : self.user_id, 'pwd' : self.user_pwd}).json()['data']
         self.populate_table()
         
     def add_user(self):
@@ -364,7 +364,7 @@ class ADD_user(QDialog):
         self.setLayout(layout)
         
     def add_user(self):
-        response = requests.put("http://127.0.0.1:5000/api/add_user", json = {'id' : self.user_id, 'pwd' : self.user_pwd, 'name' : self.name_input.text(), 'data' : self.amount_input.text()})
+        response = requests.put("http://127.0.0.1:30000/api/add_user", json = {'id' : self.user_id, 'pwd' : self.user_pwd, 'name' : self.name_input.text(), 'data' : self.amount_input.text()})
         self.accept()
 
 
@@ -392,7 +392,7 @@ class del_user(QDialog):
         self.setLayout(layout)
         
     def add_user(self):
-        response = requests.delete("http://127.0.0.1:5000/api/rm_user", json = {'id' : self.user_id, 'pwd' : self.user_pwd, 'name' : self.name_input.text()})
+        response = requests.delete("http://127.0.0.1:30000/api/rm_user", json = {'id' : self.user_id, 'pwd' : self.user_pwd, 'name' : self.name_input.text()})
         self.accept()
 
 
@@ -455,7 +455,7 @@ class TransactionDialog(QDialog):
         self.accept()
         
     def add_txn(self, user_id, name, amount, pwd):
-        url = 'http://127.0.0.1:5000/api/add_txn'
+        url = 'http://127.0.0.1:30000/api/add_txn'
         data = {'id': user_id,'pwd' : pwd,'name' : name, 'data' : amount}
 
         try:
@@ -505,7 +505,7 @@ class Delete_Account(QWidget):
             QMessageBox.warning(self, 'Error', 'Details are required')
             return
 
-        url = 'http://127.0.0.1:5000/api/rm_acc'
+        url = 'http://127.0.0.1:30000/api/rm_acc'
         data = {'id': user_id, 'pwd': password}
 
         try:
