@@ -30,7 +30,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'k8_cred', variable: 'KUBECONFIG')]) { 
                         git 'https://github.com/mehul-kocheta/flask_app.git'
-                        sh 'kubectl apply -f mysql.yaml'
+                        sh 'kubectl apply -f flask.yaml'
                         sh 'kubectl apply -f mysql.yaml' 
                     }
                 }
