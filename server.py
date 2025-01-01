@@ -100,7 +100,7 @@ class LoginResource(Resource):
             return jsonify({"message" : "User does not exists", 'status' : 404})
         
         if pwd == results.user_pwd:
-            return jsonify({'message' : "Successful", 'status' : 200})
+            return jsonify({'message' : "Successfully logged in", 'status' : 200})
         else:
             return jsonify({'message' : "Unsuccessful", 'status' : 209})
         
