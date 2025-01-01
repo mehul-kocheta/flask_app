@@ -30,11 +30,10 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'k8_cred', variable: 'KUBECONFIG')]) { 
                         git 'https://github.com/mehul-kocheta/flask_app.git'
+                        sh 'kubectl apply -f mysql.yaml'
                         sh ''' # Replace the image tag in the YAML file with the build number
                                sed -i 's|mehuljain4751/flask_server:[0-9]*|mehuljain4751/flask_server:${BUILD_NUMBER}|g' flask.yaml 
-                               kubectl apply -f flask.yaml'''
-                        sh 'kubectl apply -f mysql.yaml'
-                        sh 'kubectl apply -f flask.yaml' 
+                               kubectl apply -f flask.yaml''' 
                     }
                 }
             }
