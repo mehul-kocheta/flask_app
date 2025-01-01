@@ -30,8 +30,8 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'k8_cred', variable: 'KUBECONFIG')]) { 
                         git 'https://github.com/mehul-kocheta/flask_app.git'
-                        sh 'latest_tag=$(curl -s "https://registry.hub.docker.com/v2/repositories/mehuljain4751/flask_server/tags/?page_size=5" | jq -r \'.results[].name\' | head -n 1)'
-                        sh """sed -i 's|mehuljain4751/flask_server:.*|mehuljain4751/flask_server:${latest_tag}|' flask.yaml"""
+                        def latest_tag = sh(script: 'curl -s "https://registry.hub.docker.com/v2/repositories/mehuljain4751/flask_server/tags/?page_size=5" | jq -r \'.results[].name\' | head -n 1', returnStdout: true).trim()
+                        sh "sed -i 's|mehuljain4751/flask_server:.*|mehuljain4751/flask_server:${latest_tag}|' flask.yaml"
                         sh 'kubectl apply -f flask.yaml'
                         sh 'kubectl apply -f mysql.yaml' 
                     }
