@@ -126,7 +126,7 @@ class RegisterWidget(QWidget):
         layout.addWidget(QLabel("Register Page"))
         
         self.id_input = QLineEdit(self)
-        self.id_input.setPlaceholderText("Enter your ID")
+        self.id_input.setPlaceholderText("Enter your username")
         layout.addWidget(self.id_input)
         
         self.pwd_input = QLineEdit(self)
